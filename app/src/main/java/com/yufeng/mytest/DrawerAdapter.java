@@ -1,6 +1,6 @@
 package com.yufeng.mytest;
 import android.content.Context;
-import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +10,7 @@ import android.widget.TextView;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 
 /**
  * 抽屉adapter
@@ -23,21 +22,22 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
     private static final int TYPE_NORMAL = 1;
     private static final int TYPE_HEADER = 2;
 
-    private int curSelected = -1;
     private Context mContext ;
     private ArrayList<DrawerItem> dataList = new ArrayList<>();
 
+
+    public static class ItemIds{
+        public static final int HOME = 1;
+        public static final int RANK = 2;
+        public static final int LANMU = 3;
+        public static final int SEARCH = 4;
+        public static final int SETTING = 5;
+        public static final int MODE = 7;
+        public static final int OFFLINE = 8;
+    }
     public DrawerAdapter(Context context){
         this.mContext = context;
-        dataList.add(new DrawerItemHeader());
-        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_camera, R.string.drawer_menu_home, mContext.getResources().getColor(R.color.black)));
-        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_gallery, R.string.drawer_menu_rank,mContext.getResources().getColor(R.color.black)));
-        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_manage, R.string.drawer_menu_column,mContext.getResources().getColor(R.color.black)));
-        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_send, R.string.drawer_menu_search,mContext.getResources().getColor(R.color.black)));
-        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_share, R.string.drawer_menu_setting,mContext.getResources().getColor(R.color.black)));
-        dataList.add(new DrawerItemDivider());
-        dataList.add(new DrawerItemNormal(R.string.drawer_menu_night,mContext.getResources().getColor(R.color.grey)));
-        dataList.add(new DrawerItemNormal(R.string.drawer_menu_offline,mContext.getResources().getColor(R.color.grey)));
+       initData();
     }
 
 //    private List<DrawerItem> dataList = Arrays.asList(
@@ -51,6 +51,19 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
 //            new DrawerItemNormal(R.string.drawer_menu_night,mContext.getResources().getColor(R.color.grey)),
 //            new DrawerItemNormal(R.string.drawer_menu_offline,mContext.getResources().getColor(R.color.grey))
 //    );
+
+    private void initData(){
+        dataList.clear();
+        dataList.add(new DrawerItemHeader());
+        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_camera, R.string.drawer_menu_home, ContextCompat.getColor(mContext , R.color.black)));
+        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_gallery, R.string.drawer_menu_rank,ContextCompat.getColor(mContext , R.color.black)));
+        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_manage, R.string.drawer_menu_column,ContextCompat.getColor(mContext , R.color.black)));
+        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_send, R.string.drawer_menu_search,ContextCompat.getColor(mContext , R.color.black)));
+        dataList.add(new DrawerItemNormal(R.drawable.ic_menu_share, R.string.drawer_menu_setting,ContextCompat.getColor(mContext , R.color.black)));
+        dataList.add(new DrawerItemDivider());
+        dataList.add(new DrawerItemNormal(R.string.drawer_menu_night,ContextCompat.getColor(mContext , R.color.grey)));
+        dataList.add(new DrawerItemNormal(R.string.drawer_menu_offline,ContextCompat.getColor(mContext , R.color.grey)));
+    }
 
 
     @Override
@@ -70,6 +83,16 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
     public int getItemCount() {
         return (dataList == null || dataList.size() == 0) ? 0 : dataList.size();
     }
+
+    public void setCurSelected(int id){
+        initData();
+        DrawerItem drawerItem = dataList.get(id);
+        if (drawerItem instanceof  DrawerItemNormal){
+            ((DrawerItemNormal)drawerItem).color = ContextCompat.getColor(mContext , R.color.green);
+        }
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public DrawerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -93,7 +116,7 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
     public void onBindViewHolder(DrawerViewHolder holder, int position) {
         final DrawerItem item = dataList.get(position);
         if (holder instanceof NormalViewHolder) {
-            NormalViewHolder normalViewHolder = (NormalViewHolder) holder;
+            final NormalViewHolder normalViewHolder = (NormalViewHolder) holder;
             final DrawerItemNormal itemNormal = (DrawerItemNormal) item;
             if(itemNormal.iconRes == -1){
                 normalViewHolder.iv.setVisibility(View.GONE);
@@ -111,15 +134,11 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
                 @Override
                 public void onClick(View v) {
                     if(listener != null){
-                        listener.itemClick(itemNormal);
-
+                        listener.itemClick(normalViewHolder.getLayoutPosition());
                     }
                 }
             });
-        }else if(holder instanceof HeaderViewHolder){
-            HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
         }
-
     }
 
     public OnItemClickListener listener;
@@ -129,7 +148,7 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
     }
 
     public interface OnItemClickListener{
-        void itemClick(DrawerItemNormal drawerItemNormal);
+        void itemClick(int position);
     }
 
 
@@ -137,22 +156,22 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
 
     //-------------------------item数据模型------------------------------
     // drawerlayout item统一的数据模型
-    public interface DrawerItem {
+    private interface DrawerItem {
     }
 
 
     //有图片和文字的item
-    public class DrawerItemNormal implements DrawerItem {
-        public int iconRes;
-        public int titleRes;
+    private class DrawerItemNormal implements DrawerItem {
+        private int iconRes;
+        private int titleRes;
         private int color;
 
-        public DrawerItemNormal(int iconRes, int titleRes , int color) {
+        private DrawerItemNormal(int iconRes, int titleRes , int color) {
             this.iconRes = iconRes;
             this.titleRes = titleRes;
             this.color = color;
         }
-        public DrawerItemNormal(int titleRes, int color){
+        private DrawerItemNormal(int titleRes, int color){
             this.iconRes = -1;
             this.titleRes = titleRes;
             this.color = color;
@@ -161,14 +180,14 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
     }
 
     //分割线item
-    public class DrawerItemDivider implements DrawerItem {
-        public DrawerItemDivider() {
+    private class DrawerItemDivider implements DrawerItem {
+        private DrawerItemDivider() {
         }
     }
 
     //头部item
-    public class DrawerItemHeader implements DrawerItem{
-        public DrawerItemHeader() {
+    private class DrawerItemHeader implements DrawerItem{
+        private DrawerItemHeader() {
         }
     }
 
@@ -176,20 +195,20 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
 
     //----------------------------------ViewHolder数据模型---------------------------
     //抽屉ViewHolder模型
-    public class DrawerViewHolder extends RecyclerView.ViewHolder {
+     class DrawerViewHolder extends RecyclerView.ViewHolder {
 
-        public DrawerViewHolder(View itemView) {
+        private DrawerViewHolder(View itemView) {
             super(itemView);
         }
     }
 
     //有图标有文字ViewHolder
-    public class NormalViewHolder extends DrawerViewHolder {
-        public View view;
-        public TextView tv;
-        public ImageView iv;
+    private class NormalViewHolder extends DrawerViewHolder {
+        private View view;
+        private TextView tv;
+        private ImageView iv;
 
-        public NormalViewHolder(View itemView) {
+        private NormalViewHolder(View itemView) {
             super(itemView);
             view = itemView;
             tv = (TextView) itemView.findViewById(R.id.tv);
@@ -198,20 +217,20 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.DrawerView
     }
 
     //分割线ViewHolder
-    public class DividerViewHolder extends DrawerViewHolder {
+    private class DividerViewHolder extends DrawerViewHolder {
 
-        public DividerViewHolder(View itemView) {
+        private DividerViewHolder(View itemView) {
             super(itemView);
         }
     }
 
     //头部ViewHolder
-    public class HeaderViewHolder extends DrawerViewHolder {
+    private class HeaderViewHolder extends DrawerViewHolder {
 
         private ImageView sdv_icon;
         private TextView tv_login;
 
-        public HeaderViewHolder(View itemView) {
+        private HeaderViewHolder(View itemView) {
             super(itemView);
             sdv_icon = (ImageView) itemView.findViewById(R.id.imageView);
             tv_login = (TextView) itemView.findViewById(R.id.name);

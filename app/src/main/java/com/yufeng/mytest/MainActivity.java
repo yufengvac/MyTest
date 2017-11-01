@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -45,22 +46,25 @@ public class MainActivity extends AppCompatActivity
 //        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 //        navigationView.setNavigationItemSelectedListener(this);
 
-        DrawerAdapter drawerAdapter = new DrawerAdapter(this);
+        final DrawerAdapter drawerAdapter = new DrawerAdapter(this);
         drawerAdapter.setOnItemClickListener(new DrawerAdapter.OnItemClickListener() {
             @Override
-            public void itemClick(DrawerAdapter.DrawerItemNormal drawerItemNormal) {
-                switch (drawerItemNormal.iconRes){
-                    case R.string.drawer_menu_home:
+            public void itemClick(int position) {
+                drawerAdapter.setCurSelected(position);
+                switch (position){
+                    case DrawerAdapter.ItemIds.HOME:
+                        Toast.makeText(MainActivity.this,"点击了首页",Toast.LENGTH_LONG).show();
                         break;
-                    case R.string.drawer_menu_rank:
+                    case DrawerAdapter.ItemIds.RANK:
+                        Toast.makeText(MainActivity.this,"点击了排行榜",Toast.LENGTH_LONG).show();
                         break;
-                    case R.string.drawer_menu_search:
+                    case DrawerAdapter.ItemIds.LANMU:
                         break;
-                    case R.string.drawer_menu_setting:
+                    case DrawerAdapter.ItemIds.SEARCH:
                         break;
-                    case R.string.drawer_menu_night:
+                    case DrawerAdapter.ItemIds.SETTING:
                         break;
-                    case R.string.drawer_menu_offline:
+                    case DrawerAdapter.ItemIds.MODE:
                         break;
                 }
                 drawer.closeDrawer(Gravity.START);
